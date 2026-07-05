@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>learn --fast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15171C;
+    --ink-2:#1D2027;
+    --paper:#ECE7DA;
+    --paper-dim:#B9B4A6;
+    --amber:#E8A33D;
+    --teal:#4FB6AE;
+    --violet:#9C8CFF;
+    --rose:#E8747C;
+    --line: rgba(236,231,218,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    padding:48px 20px 80px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  /* header / hero */
+  .brand{
+    display:flex; align-items:baseline; gap:10px;
+    font-family:'Space Mono',monospace;
+    margin-bottom:6px;
+  }
+  .brand .dot{color:var(--amber);}
+  .brand h1{
+    font-size:1.05rem; font-weight:700; letter-spacing:0.02em; margin:0;
+    color:var(--paper-dim);
+  }
+  .hero h2{
+    font-family:'Space Mono',monospace;
+    font-size:clamp(1.6rem, 5vw, 2.4rem);
+    line-height:1.25;
+    margin:18px 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .hero h2 .hl{color:var(--teal);}
+  .hero p.sub{
+    color:var(--paper-dim); font-size:0.98rem; margin:0 0 32px; max-width:520px;
+  }
+
+  /* search */
+  .prompt-row{
+    display:flex; align-items:center;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 16px;
+    gap:10px;
+    transition:border-color .15s ease;
+  }
+  .prompt-row:focus-within{border-color:var(--teal);}
+  .prompt-row .prefix{
+    font-family:'Space Mono',monospace;
+    color:var(--teal); font-weight:700; user-select:none;
+  }
+  .prompt-row input{
+    flex:1; background:none; border:none; outline:none;
+    color:var(--paper); font-family:'Space Mono',monospace;
+    font-size:1rem;
+  }
+  .prompt-row input::placeholder{color:var(--paper-dim);}
+  .cursor{
+    width:8px; height:1.1em; background:var(--amber);
+    animation:blink 1s step-end infinite; display:inline-block;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  .go-btn{
+    background:var(--amber); color:var(--ink); border:none;
+    font-family:'Space Mono',monospace; font-weight:700;
+    padding:8px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem;
+    white-space:nowrap;
+  }
+  .go-btn:hover{background:#f0b158;}
+  .go-btn:disabled{opacity:0.5; cursor:default;}
+
+  /* chips */
+  .chip-label{
+    font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--paper-dim);
+    margin:22px 0 10px; letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    background:none; border:1px solid var(--line); color:var(--paper);
+    padding:7px 13px; border-radius:20px; font-size:0.82rem; cursor:pointer;
+    font-family:'Manrope',sans-serif; transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--teal); color:var(--teal);}
+
+  /* results */
+  #results{margin-top:44px;}
+  .status{
+    font-family:'Space Mono',monospace; color:var(--paper-dim);
+    font-size:0.88rem; display:none; align-items:center; gap:10px;
+  }
+  .status.active{display:flex;}
+  .spin{
+    width:14px;height:14px;border-radius:50%;
+    border:2px solid var(--line); border-top-color:var(--teal);
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .error-box{
+    display:none; border:1px solid var(--rose); color:var(--rose);
+    padding:14px 16px; border-radius:8px; font-size:0.9rem;
+    font-family:'Space Mono',monospace;
+  }
+
+  .card{
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;
+    margin-bottom:16px; background:var(--ink-2);
+  }
+  .tag-row{
+    display:flex; align-items:center; gap:8px;
+    padding:10px 16px; border-bottom:1px solid var(--line);
+  }
+  .tag{
+    font-family:'Space Mono',monospace; font-size:0.68rem; font-weight:700;
+    letter-spacing:0.08em; padding:3px 8px; border-radius:4px;
+  }
+  .tag.explain{background:rgba(79,182,174,0.18); color:var(--teal);}
+  .tag.steps{background:rgba(156,140,255,0.18); color:var(--violet);}
+  .tag.syntax{background:rgba(232,163,61,0.18); color:var(--amber);}
+  .tag.code{background:rgba(232,116,124,0.18); color:var(--rose);}
+  .tag.tips{background:rgba(79,182,174,0.18); color:var(--teal);}
+  .tag.watch{background:rgba(156,140,255,0.18); color:var(--violet);}
+  .tag.output{background:rgba(232,163,61,0.18); color:var(--amber);}
+  .tag.refs{background:rgba(232,116,124,0.18); color:var(--rose);}
+  .tag.live{background:rgba(79,182,174,0.9); color:var(--ink);}
+  .tag.described{background:rgba(185,180,166,0.25); color:var(--paper-dim);}
+  .card-body{padding:16px 18px;}
+  .card-body p{margin:0; line-height:1.65; font-size:0.95rem; color:var(--paper);}
+  .card-body ol, .card-body ul{margin:0; padding-left:20px; line-height:1.7; font-size:0.95rem;}
+  .card-body li{margin-bottom:4px;}
+
+  .syntax-block{
+    font-family:'Space Mono',monospace; font-size:0.85rem;
+    background:var(--ink); border:1px solid var(--line);
+    border-radius:6px; padding:12px 14px; white-space:pre-wrap;
+    color:var(--amber); margin-top:8px;
+  }
+
+  .code-block{
+    display:flex; font-family:'Space Mono',monospace; font-size:0.84rem;
+    background:var(--ink); border-radius:6px; overflow-x:auto;
+  }
+  .code-lines{
+    padding:14px 10px; text-align:right; color:var(--paper-dim);
+    border-right:1px solid var(--line); user-select:none;
+  }
+  .code-content{padding:14px; white-space:pre; color:var(--paper); flex:1;}
+
+  .watch-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--violet); color:var(--violet);
+    text-decoration:none; padding:9px 15px; border-radius:8px;
+    font-family:'Space Mono',monospace; font-size:0.85rem; margin-top:4px;
+  }
+  .watch-btn:hover{background:rgba(156,140,255,0.12);}
+
+  .output-frame{
+    width:100%; min-height:120px; border:1px solid var(--line);
+    border-radius:6px; background:#fff; display:block;
+  }
+  .output-note{
+    font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--paper-dim);
+    margin-top:8px;
+  }
+  .described-output{
+    font-family:'Space Mono',monospace; font-size:0.85rem;
+    background:var(--ink); border:1px solid var(--line);
+    border-radius:6px; padding:12px 14px; white-space:pre-wrap;
+    color:var(--paper);
+  }
+  .ref-links{display:flex; flex-wrap:wrap; gap:8px;}
+  .ref-link{
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--line); color:var(--paper);
+    text-decoration:none; padding:8px 13px; border-radius:8px;
+    font-family:'Space Mono',monospace; font-size:0.8rem;
+  }
+  .ref-link:hover{border-color:var(--rose); color:var(--rose);}
+  .accuracy-note{
+    font-size:0.82rem; color:var(--paper-dim); margin-top:24px;
+    border-left:2px solid var(--amber); padding-left:12px; line-height:1.6;
+  }
+
+  footer{
+    text-align:center; margin-top:60px; color:var(--paper-dim);
+    font-family:'Space Mono',monospace; font-size:0.72rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .cursor, .spin{animation:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand"><span class="dot">&gt;</span><h1>learn --fast</h1></div>
+
+  <div class="hero">
+    <h2>Stop tab-hopping.<br>Just <span class="hl">ask the topic.</span></h2>
+    <p class="sub">Type any web dev topic — frontend, backend, databases, APIs, security, UI/UX, career advice — and get a plain-English explanation, steps, syntax, example, its real output, and where to double-check it.</p>
+  </div>
+
+  <div class="prompt-row">
+    <span class="prefix">$</span>
+    <input id="topicInput" type="text" placeholder="e.g. how to make a website responsive" autocomplete="off">
+    <span class="cursor" id="blinkCursor"></span>
+    <button class="go-btn" id="searchBtn">RUN ↵</button>
+  </div>
+
+  <div class="chip-label">// or pick a topic</div>
+  <div class="chips" id="chips">
+    <button class="chip">Responsive design</button>
+    <button class="chip">Flexbox</button>
+    <button class="chip">CSS Grid</button>
+    <button class="chip">DOM manipulation</button>
+    <button class="chip">Fetch API</button>
+    <button class="chip">Media queries</button>
+    <button class="chip">Box model</button>
+    <button class="chip">Async / await</button>
+    <button class="chip">CSS variables</button>
+    <button class="chip">Git basics</button>
+    <button class="chip">SQL basics</button>
+    <button class="chip">How databases work</button>
+    <button class="chip">What is a server</button>
+    <button class="chip">Bootstrap grid</button>
+    <button class="chip">What is an API</button>
+    <button class="chip">Client vs server</button>
+    <button class="chip">HTTPS explained</button>
+    <button class="chip">Website security basics</button>
+    <button class="chip">UI vs UX</button>
+    <button class="chip">Becoming a better developer</button>
+  </div>
+
+  <div id="results">
+    <div class="status" id="statusBox"><div class="spin"></div><span id="statusText">Researching...</span></div>
+    <div class="error-box" id="errorBox"></div>
+    <div id="output"></div>
+  </div>
+
+  <footer>press RUN or click a chip &mdash; results are generated fresh each time</footer>
+</div>
+
+<script>
+const input = document.getElementById('topicInput');
+const btn = document.getElementById('searchBtn');
+const chips = document.getElementById('chips');
+const statusBox = document.getElementById('statusBox');
+const statusText = document.getElementById('statusText');
+const errorBox = document.getElementById('errorBox');
+const output = document.getElementById('output');
+const cursorEl = document.getElementById('blinkCursor');
+
+input.addEventListener('input', () => { cursorEl.style.display = input.value ? 'none' : 'inline-block'; });
+input.addEventListener('keydown', (e) => { if(e.key === 'Enter') runSearch(); });
+btn.addEventListener('click', runSearch);
+chips.addEventListener('click', (e) => {
+  if(e.target.classList.contains('chip')){
+    input.value = e.target.textContent;
+    cursorEl.style.display = 'none';
+    runSearch();
+  }
+});
+
+const loadingMessages = [
+  "Researching...", "Reading the docs...", "Writing the example...", "Almost ready..."
+];
+
+async function runSearch(){
+  const topic = input.value.trim();
+  if(!topic) return;
+
+  btn.disabled = true;
+  errorBox.style.display = 'none';
+  output.innerHTML = '';
+  statusBox.classList.add('active');
+  let msgIndex = 0;
+  statusText.textContent = loadingMessages[0];
+  const msgTimer = setInterval(() => {
+    msgIndex = (msgIndex + 1) % loadingMessages.length;
+    statusText.textContent = loadingMessages[msgIndex];
+  }, 1400);
+
+  try{
+    const response = await fetch("/.netlify/functions/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+
+    if(!response.ok){
+      const errBody = await response.json().catch(() => ({}));
+      throw new Error(errBody.error || "API request failed");
+    }
+    const data = await response.json();
+    const cleaned = (data.text || "").replace(/^```json|```$/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+
+    render(topic, parsed);
+  }catch(err){
+    errorBox.textContent = "Couldn't fetch that topic. Try again, or rephrase it slightly. (" + err.message + ")";
+    errorBox.style.display = 'block';
+  }finally{
+    clearInterval(msgTimer);
+    statusBox.classList.remove('active');
+    btn.disabled = false;
+  }
+}
+
+function escapeHtml(str){
+  return (str || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function render(topic, d){
+  const stepsHtml = (d.steps || []).map(s => `<li>${escapeHtml(s)}</li>`).join("");
+  const tipsHtml = (d.tips || []).map(t => `<li>${escapeHtml(t)}</li>`).join("");
+  const codeLines = (d.exampleCode || "").split("\n");
+  const lineNums = codeLines.map((_, i) => i + 1).join("\n");
+  const ytUrl = "https://www.youtube.com/results?search_query=" + encodeURIComponent(d.youtubeQuery || topic);
+
+  const mdnUrl = "https://developer.mozilla.org/en-US/search?q=" + encodeURIComponent(topic);
+  const soUrl = "https://stackoverflow.com/search?q=" + encodeURIComponent(topic);
+  const w3Url = "https://www.google.com/search?q=" + encodeURIComponent("site:w3schools.com " + topic);
+
+  const isLive = d.previewType === 'live-html' || d.previewType === 'live-js';
+  let outputBlockHtml;
+  if(isLive && d.previewHtml){
+    outputBlockHtml = `
+      <iframe class="output-frame" sandbox="allow-scripts allow-same-origin" srcdoc="${escapeHtml(d.previewHtml)}"></iframe>
+      <p class="output-note">↑ this is actually rendered/run live from the code above, not just described</p>
+    `;
+  } else {
+    outputBlockHtml = `<div class="described-output">${escapeHtml(d.expectedOutput || "No output preview available for this topic.")}</div>
+      <p class="output-note">↑ this can't run directly in a browser, so this is a described result, not an executed one</p>`;
+  }
+  const outputTag = isLive ? '<span class="tag live">LIVE</span>' : '<span class="tag described">DESCRIBED</span>';
+
+  output.innerHTML = `
+    <div class="card">
+      <div class="tag-row"><span class="tag explain">EXPLAIN</span></div>
+      <div class="card-body"><p>${escapeHtml(d.explanation || "").replace(/\n/g,"<br><br>")}</p></div>
+    </div>
+
+    <div class="card">
+      <div class="tag-row"><span class="tag steps">STEPS</span></div>
+      <div class="card-body"><ol>${stepsHtml}</ol></div>
+    </div>
+
+    <div class="card">
+      <div class="tag-row"><span class="tag syntax">SYNTAX</span></div>
+      <div class="card-body"><div class="syntax-block">${escapeHtml(d.syntax || "")}</div></div>
+    </div>
+
+    <div class="card">
+      <div class="tag-row"><span class="tag code">CODE &middot; ${escapeHtml(d.codeLanguage || "")}</span></div>
+      <div class="card-body">
+        <div class="code-block">
+          <div class="code-lines">${lineNums}</div>
+          <div class="code-content">${escapeHtml(d.exampleCode || "")}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tag-row"><span class="tag output">OUTPUT</span>${outputTag}</div>
+      <div class="card-body">${outputBlockHtml}</div>
+    </div>
+
+    <div class="card">
+      <div class="tag-row"><span class="tag tips">TIPS</span></div>
+      <div class="card-body"><ul>${tipsHtml}</ul></div>
+    </div>
+
+    <div class="card">
+      <div class="tag-row"><span class="tag watch">WATCH</span></div>
+      <div class="card-body">
+        <a class="watch-btn" href="${ytUrl}" target="_blank" rel="noopener">▶ Search YouTube: "${escapeHtml(d.youtubeQuery || topic)}"</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tag-row"><span class="tag refs">REFERENCES</span></div>
+      <div class="card-body">
+        <div class="ref-links">
+          <a class="ref-link" href="${mdnUrl}" target="_blank" rel="noopener">📘 MDN</a>
+          <a class="ref-link" href="${w3Url}" target="_blank" rel="noopener">📗 W3Schools</a>
+          <a class="ref-link" href="${soUrl}" target="_blank" rel="noopener">💬 Stack Overflow</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const accuracyNote = document.createElement('p');
+  accuracyNote.className = 'accuracy-note';
+  accuracyNote.textContent = "This explanation is AI-generated. It's usually accurate but not guaranteed — use the reference links above to double-check anything important.";
+  output.appendChild(accuracyNote);
+
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
